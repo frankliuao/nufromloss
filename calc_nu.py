@@ -62,6 +62,7 @@ def calcFlux2Body(beamMat,detSize):
 
     if len(nuFlux) >= 1:
         nuFlux = np.vstack(nuFlux)
+
     return nuFlux
 
 def main():
