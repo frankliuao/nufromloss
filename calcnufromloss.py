@@ -58,4 +58,3 @@ def getnuflux(lossbeam):
     for ii in parentsGroup:
         neutrinoGroup[int(ii[0,7])] = calcFlux2Body(ii,_detectorSize)
     return neutrinoGroup
-
