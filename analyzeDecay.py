@@ -52,7 +52,7 @@ def group_by_PDG(beamMat):
     lastPDGbeam = beamMatSorted[lastIndex:,:]
     lastPDGbeam = lastPDGbeam[np.argsort(lastPDGbeam[:,8]),:]
     beamList.append(lastPDGbeam)
-    
+
     return beamList
 
 def main():
