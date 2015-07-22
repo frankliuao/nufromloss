@@ -68,7 +68,7 @@ def get_flux(lossfile):
 
     set_detector and set_cut must have already been used before getnuflux.
     """
-    if _cutFrom == -1 or len(np.nonzero(_detectorSize)[0]) == 0:
+    if _cut_from_z == -1 or len(np.nonzero(_det_size)[0]) == 0:
         print "setdetector and setcut first."
         return None
     parents = find_decay(lossfile)
@@ -86,7 +86,7 @@ def find_decay(lossfile):
     At least one daughter of the decay needs to be recorded in the loss file
     when doing the G4BL simulation.
     """
-    lossbeam = loadtxt(lossfile)
+    lossbeam = loadtxt(lossfile, 3)
     lossbeam_sorted = lossbeam[np.argsort(lossbeam[:, 8]), :]
     number_of_loss = lossbeam.shape[0]
 
@@ -119,7 +119,7 @@ def find_decay(lossfile):
     # All the decayed particles in this lossbeam:
     all_parents = lossbeam_sorted[bool_keep.astype(bool), :]
 
-    return allParents
+    return all_parents 
 
 
 def group_by_PDG(beam_array):
