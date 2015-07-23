@@ -112,14 +112,14 @@ def find_decay(lossfile):
     if iterator1 != number_of_loss - 1:
         # This means at least the last two eventID are the same
         this_event = lossbeam_sorted[iterator1:, :]
-        bool_keep[np.nonzero(np.in1d(thisID[:, 9],
-                                     thisID[:,10]))[0] +
+        bool_keep[np.nonzero(np.in1d(this_event[:, 9],
+                                     this_event[:,10]))[0] +
                   iterator1] = 1
 
     # All the decayed particles in this lossbeam:
     all_parents = lossbeam_sorted[bool_keep.astype(bool), :]
 
-    return all_parents 
+    return all_parents
 
 
 def group_by_PDG(beam_array):
