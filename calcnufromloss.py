@@ -76,7 +76,18 @@ def get_flux(lossfile):
     parents_list = group_by_PDG(parents)
     neutrino_group = {}
     for ii in parents_list:
-        neutrino_group[int(ii[0, 7])] = flux_2body(ii, _det_size)
+        neutrino_group[int(ii[0, 7])] = []
+        flux_2body_tmp = flux_2body(ii, _det_size)
+        if flux_2body_tmp is not None:
+            neutrino_group[int(ii[0, 7])].append(flux_2body_tmp)
+        flux_mu_tmp = flux_mu(ii, _det_size)
+        if flux_mu_tmp is not None:
+            neutrino_group[int(ii[0, 7])].append(flux_mu_tmp)
+        if len(neutrino_group[int(ii[0, 7])]) > 0:
+            neutrino_group[int(ii[0, 7])] = np.row_stack(neutrino_group[int(
+                ii[0, 7])])
+        else:
+            neutrino_group[int(ii[0, 7])] = np.array([])
     return neutrino_group
 
 
@@ -85,6 +96,16 @@ def find_decay(lossfile):
 
     At least one daughter of the decay needs to be recorded in the loss file
     when doing the G4BL simulation.
+
+    ------
+    Parameters:
+    lossfile, str, the path of the G4BL loss file
+
+    ------
+    Returns:
+    all_parents, numpy ndarry (N-by-12), all the decayed parent particles
+    at the points of the decay, in G4Beamline ASCII beam format.
+
     """
     lossbeam = loadtxt(lossfile, 3)
     lossbeam_sorted = lossbeam[np.argsort(lossbeam[:, 8]), :]
@@ -127,11 +148,11 @@ def group_by_PDG(beam_array):
 
     ------
     Parameter:
-        beam_array: numpy ndarray, N-by-12, standard G4BL ASCII beam format;
+        beam_array: numpy ndarray (N-by-12), standard G4BL ASCII beam format;
 
     ------
     Return:
-    beam_list, a list, [beam_array for PDGid 1, for PDGid 2, ...]
+    beam_list, a list, [beam array for PDGid 1, for PDGid 2, ...]
 
     """
     beam_array_sorted = beam_array[np.argsort(beam_array[:, 7]), :]

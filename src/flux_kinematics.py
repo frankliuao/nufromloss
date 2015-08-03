@@ -12,12 +12,20 @@ from time import asctime
 from constants import pdgData
 from loadtxt import loadtxt
 
-__all__ = ["flux_2body"]
+__all__ = ["flux_2body", "flux_mu"]
 
 
 def flux_2body(beam_array, det_size):
     """Given a pion/kaon beam array, calculate the resulting neutrino flux
     from a 2-body decay at the detector.
+
+    ------
+    Returns:
+    tot_nu_flux: numpy ndarray (N-by-3), a neutrino spectrum array, with the
+    first column specifying
+    the neutrino energy, the second specifiying the probability of hitting the
+    detector MULTIPLIED by the particle weight, and the third specifying the
+    neutrino flavor.
     """
 
     # Find the decay pattern:
@@ -32,14 +40,9 @@ def flux_2body(beam_array, det_size):
     beamE = np.sqrt(beamP**2 + pdgData[parentPDGid]["mass"]**2)
     beam_gamma = beamE / pdgData[parentPDGid]["mass"]
     beam_beta = np.sqrt(1 - 1/beam_gamma**2)
-    beam_direction = np.zeros( [particle_quantity, 3] )
+    beam_direction = np.zeros([particle_quantity, 3])
     for jj in range(3):
         beam_direction[:,jj] = beam_array[:, jj+3] / beamP
-    '''det_direction is approximated to be [0, 0, 1]
-    det_direction = (np.array(det_size) /
-                     np.sqrt(det_size[0]**2 +
-                             det_size[1]**2 +
-                             det_size[2]**2)).reshape([3, 1])'''
     det_direction = np.array([0, 0, 1]).reshape([3, 1])
     # Angle between the parent particle direction and the det.
     theta = np.arccos(np.dot(beam_direction,
@@ -89,8 +92,90 @@ def flux_2body(beam_array, det_size):
 
     if len(tot_nu_flux) >= 1:
         tot_nu_flux = np.vstack(tot_nu_flux)
+    else:
+        tot_nu_flux = None
 
     return tot_nu_flux
+
+
+def flux_mu(beam_array, det_size):
+    """Given a muon beam array, calculate the resulting neutrino flux
+    from the 3-body decay at a detector with the specified size and distance.
+
+    ------
+    Returns:
+    tot_nu_flux: numpy ndarray (N-by-3), a neutrino spectrum array, with the
+    first column specifying
+    the neutrino energy, the second specifiying the probability of hitting the
+    detector MULTIPLIED by the particle weight, and the third specifying the
+    neutrino flavor.
+    """
+
+    # Find the decay pattern:
+    parentPDGid = beam_array[0,7]
+    if np.abs(parentPDGid) is not 13: return np.array([])
+    parent_decay_pattern = pdgData[parentPDGid]["decay"]
+    tot_nu_flux = []
+
+    #
+    particle_quantity = beam_array.shape[0]
+    beamP = np.sqrt(beam_array[:,3]**2 + beam_array[:,4]**2 +
+                    beam_array[:,5]**2)
+    beamE = np.sqrt(beamP**2 + pdgData[parentPDGid]["mass"]**2)
+    beam_gamma = beamE / pdgData[parentPDGid]["mass"]
+    beam_beta = np.sqrt(1 - 1/beam_gamma**2)
+    beam_direction = np.zeros([particle_quantity, 3])
+    for jj in range(3):
+        beam_direction[:,jj] = beam_array[:, jj+3] / beamP
+
+    #
+    det_direction = np.array([0, 0, 1]).reshape([3, 1])
+    # Angle between the parent particle direction and the det.
+    theta = np.arccos(np.dot(beam_direction,
+                              det_direction).reshape([particle_quantity,]))
+    # Change of the reference coordinate system:
+    cos_theta_rest = (beam_beta-np.cos(theta)) / (beam_beta*np.cos(theta)-1)
+
+    flux_func = {"nu_mu": [lambda x: 2*x**2*(3-2*x), lambda x: 2*x**2*(1-2*x)],
+                 "nu_e": [lambda x: 12*x**2(1-x), lambda x: 12*x**2*(1-x)]}
+
+    flux_factor_pre = 1/(4*np.pi)*det_size[0]*det_size[1]/det_size[2]**2 * \
+                      2/pdgData[parentPDGid]["mass"] * \
+                      1/(beam_gamma*(1+beam_beta*cos_theta_rest)) * \
+                      (1-beam_beta**2)/(beam_beta*np.cos(theta)-1)
+
+    flux_factor = {"nu_mu": flux_factor_pre*flux_func["nu_mu"][0],
+                   "nu_e": flux_factor_pre*flux_func["nu_e"][0]}
+
+    dP_dE = {"nu_mu": np.vectorize(flux_factor["nu_mu"]),
+             "nu_e": np.vectorize(flux_factor["nu_e"])}
+
+    energy_frags = lambda energy_mu: np.arange(0, energy_mu, 1)
+    all_nu_mu_flux = [dP_dE["nu_mu"](energy_frags[beamE[ii]])*beam_array[11]
+                      for ii in range(len(beamE))]
+    all_nu_mu_E = [energy_frags[ii] for ii in beamE]
+    all_nu_mu_flux = np.concatenate(all_nu_mu_flux)
+    all_nu_mu_E = np.concatenate[all_nu_mu_E]
+    all_nu_e_flux = [dP_dE["nu_e"](energy_frags[beamE[ii]])*beam_array[11]
+                     for ii in range(len(beamE))]
+    all_nu_e_flux = np.concatenate(all_nu_e_flux)
+    all_nu_e_E = all_nu_mu_E
+
+    #
+    if pdgData[parentPDGid]["charge"] == -1:
+        nu_e_pdg = -12
+        nu_mu_pdg = 14
+    else:
+        nu_e_pdg = 12
+        nu_mu_pdg = -14
+
+    all_nu_mu = np.column_stack([all_nu_mu_E, all_nu_mu_flux,
+                                 np.ones(all_nu_mu_flux.shape[0])*nu_mu_pdg])
+    all_nu_e = np.column_stack([all_nu_e_E, all_nu_e_flux,
+                                np.ones(all_nu_e_flux.shape[0])*nu_e_pdg])
+
+    all_nu_flux = np.row_stack([all_nu_mu, all_nu_e])
+    return all_nu_flux
 
 
 def main(det_size):
