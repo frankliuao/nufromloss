@@ -140,14 +140,14 @@ def flux_mu(beam_array, det_size):
         1/(4*np.pi)*det_size[0]*det_size[1]/det_size[2]**2 * \
         2/105.658 * \
         1/(beam_gamma[ii]*(1+beam_beta[ii]*cos_theta_rest[ii])) * \
-        (1-beam_beta[ii]**2)/(beam_beta[ii]*np.cos(theta[ii])-1)
+        (1-beam_beta[ii]**2)/(beam_beta[ii]*np.cos(theta[ii])-1)**2
 
     flux_func = {"nu_mu": [lambda x: 2*x**2*(3-2*x),
                            lambda x: 2*x**2*(1-2*x)],
                  "nu_e": [lambda x: 12*x**2*(1-x),
                           lambda x: 12*x**2*(1-x)]}
     func_x_factor = lambda ii: 2/(105.658*beam_gamma[ii] *
-                           (1+beam_beta[ii]*cos_theta_rest[ii]))
+                                  (1+beam_beta[ii]*cos_theta_rest[ii]))
 
     # flux_factor is the factor in square brackets in the equation 4.14 of
     # Donega's thesis
@@ -157,13 +157,17 @@ def flux_mu(beam_array, det_size):
     flux_factor = {"nu_mu": np.vectorize(flux_func["nu_mu"][0]),
                    "nu_e": np.vectorize(flux_func["nu_e"][0])}
 
-    energy_frags = lambda energy_mu: np.arange(0, energy_mu, 20)
     all_nu_mu_flux = [None,]*len(beamE)
     all_nu_e_flux = [None,]*len(beamE)
     all_nu_mu_E = [None,]*len(beamE)
     all_nu_e_E = [None,]*len(beamE)
     for ii in range(len(beamE)):
         energy_frags = np.arange(0, beamE[ii], 20)
+        # x in the flux_func must be less than one:
+        energy_frags_correct = \
+            energy_frags[np.all([energy_frags*func_x_factor(ii)<=1,
+                                 energy_frags*func_x_factor(ii)>=0], axis=0)]
+        energy_frags = energy_frags_correct
         # nu_mu
         dP_dE_mu = flux_factor_pre(ii) * \
                    flux_factor["nu_mu"](energy_frags*func_x_factor(ii))
