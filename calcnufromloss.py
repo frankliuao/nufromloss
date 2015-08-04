@@ -23,12 +23,12 @@ value is a N-by-3 numpy, columns = nu energy, flux, nu PDGid
 
 from __future__ import division
 import numpy as np
-from time import sleep,asctime
 
 from src.loadtxt import loadtxt
 from src.flux_kinematics import flux_2body, flux_mu
+from src.group_by_PDG import group_by_PDG
 
-__all__ = ['set_cut', 'set_detector', "get_flux", "find_decay", "group_by_PDG"]
+__all__ = ['set_cut', 'set_detector', "get_flux", "find_decay"]
 
 _det_size = np.zeros(3)
 _cut_from_z = -1
@@ -71,9 +71,10 @@ def get_flux(lossfile):
     if _cut_from_z == -1 or len(np.nonzero(_det_size)[0]) == 0:
         print "setdetector and setcut first."
         return None
-    parents = find_decay(lossfile)
-    parents = parents[parents[:,2]>=_cut_from_z, :]
-    parents_list = group_by_PDG(parents)
+    parents_list = find_decay(lossfile)
+    parents_list_cut = [ii[ii[:,2]>=_cut_from_z, :]
+                        for ii in parents_list]
+    parents_list = parents_list_cut
     neutrino_group = {}
     for ii in parents_list:
         neutrino_group[int(ii[0, 7])] = []
@@ -103,8 +104,9 @@ def find_decay(lossfile):
 
     ------
     Returns:
-    all_parents, numpy ndarry (N-by-12), all the decayed parent particles
-    at the points of the decay, in G4Beamline ASCII beam format.
+    all_parents_list, a list of numpy ndarrys (N-by-12), each list member is
+    a kind of the decayed parent particles at the points of the decay,
+    in G4Beamline ASCII beam format.
 
     """
     lossbeam = loadtxt(lossfile, 3)
@@ -139,33 +141,6 @@ def find_decay(lossfile):
 
     # All the decayed particles in this lossbeam:
     all_parents = lossbeam_sorted[bool_keep.astype(bool), :]
+    all_parents_list = group_by_PDG(all_parents)
 
-    return all_parents
-
-
-def group_by_PDG(beam_array):
-    """Group the beam by the particle PDGid.
-
-    ------
-    Parameter:
-        beam_array: numpy ndarray (N-by-12), standard G4BL ASCII beam format;
-
-    ------
-    Return:
-    beam_list, a list, [beam array for PDGid 1, for PDGid 2, ...]
-
-    """
-    beam_array_sorted = beam_array[np.argsort(beam_array[:, 7]), :]
-    beam_list = []
-    iter_index = 0
-    for ii in range(1, beam_array.shape[0]):
-        if beam_array_sorted[ii, 7] != beam_array_sorted[ii-1, 7]:
-            this_PDG = beam_array_sorted[iter_index:ii, :]
-            this_PDG = this_PDG[np.argsort(this_PDG[:, 8]), :]
-            beam_list.append(this_PDG)
-            iter_index = ii
-    last_PDG = beam_array_sorted[iter_index:, :]
-    last_PDG = last_PDG[np.argsort(last_PDG[:, 8]), :]
-    beam_list.append(last_PDG)
-
-    return beam_list
+    return all_parents_list

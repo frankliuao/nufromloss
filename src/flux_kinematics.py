@@ -121,8 +121,8 @@ def flux_mu(beam_array, det_size):
     particle_quantity = beam_array.shape[0]
     beamP = np.sqrt(beam_array[:,3]**2 + beam_array[:,4]**2 +
                     beam_array[:,5]**2)
-    beamE = np.sqrt(beamP**2 + pdgData[parentPDGid]["mass"]**2)
-    beam_gamma = beamE / pdgData[parentPDGid]["mass"]
+    beamE = np.sqrt(beamP**2 + 105.658**2)
+    beam_gamma = beamE / 105.658
     beam_beta = np.sqrt(1 - 1/beam_gamma**2)
     beam_direction = np.zeros([particle_quantity, 3])
     for jj in range(3):
@@ -138,7 +138,7 @@ def flux_mu(beam_array, det_size):
 
     flux_factor_pre = lambda ii: \
         1/(4*np.pi)*det_size[0]*det_size[1]/det_size[2]**2 * \
-        2/pdgData[parentPDGid]["mass"] * \
+        2/105.658 * \
         1/(beam_gamma[ii]*(1+beam_beta[ii]*cos_theta_rest[ii])) * \
         (1-beam_beta[ii]**2)/(beam_beta[ii]*np.cos(theta[ii])-1)
 
@@ -146,35 +146,43 @@ def flux_mu(beam_array, det_size):
                            lambda x: 2*x**2*(1-2*x)],
                  "nu_e": [lambda x: 12*x**2*(1-x),
                           lambda x: 12*x**2*(1-x)]}
+    func_x_factor = lambda ii: 2/(105.658*beam_gamma[ii] *
+                           (1+beam_beta[ii]*cos_theta_rest[ii]))
 
-    flux_factor = {"nu_mu": flux_func["nu_mu"][0],
-                   "nu_e": flux_func["nu_e"][0]}
-
-    dP_dE = {"nu_mu": np.vectorize(flux_factor["nu_mu"]),
-             "nu_e": np.vectorize(flux_factor["nu_e"])}
+    # flux_factor is the factor in square brackets in the equation 4.14 of
+    # Donega's thesis
+    # http://mdonega.web.cern.ch/mdonega/lowe/Thesis.pdf
+    #
+    # Assuming no polarization.
+    flux_factor = {"nu_mu": np.vectorize(flux_func["nu_mu"][0]),
+                   "nu_e": np.vectorize(flux_func["nu_e"][0])}
 
     energy_frags = lambda energy_mu: np.arange(0, energy_mu, 20)
-    all_nu_mu_flux = \
-        [dP_dE["nu_mu"](energy_frags(beamE[ii])*2/
-                        (pdgData[parentPDGid]["mass"]*beam_gamma[ii]*
-                         (1+beam_beta[ii]*np.cos(theta[ii])))) *
-        flux_factor_pre(ii) / len(energy_frags(beamE[ii])) * 20 *
-        beam_array[ii, 11]
-        for ii in range(len(beamE))]
-    all_nu_mu_E = [energy_frags(ii) for ii in beamE]
+    all_nu_mu_flux = [None,]*len(beamE)
+    all_nu_e_flux = [None,]*len(beamE)
+    all_nu_mu_E = [None,]*len(beamE)
+    all_nu_e_E = [None,]*len(beamE)
+    for ii in range(len(beamE)):
+        energy_frags = np.arange(0, beamE[ii], 20)
+        # nu_mu
+        dP_dE_mu = flux_factor_pre(ii) * \
+                   flux_factor["nu_mu"](energy_frags*func_x_factor(ii))
+        dP_mu = dP_dE_mu * 20 * beam_array[ii, 11]
+        all_nu_mu_flux[ii] = dP_mu
+        all_nu_mu_E[ii] = energy_frags
+        # nu_e
+        dP_dE_e = flux_factor_pre(ii) * \
+                  flux_factor["nu_e"](energy_frags*func_x_factor(ii))
+        dP_e = dP_dE_e * 20 * beam_array[ii, 11]
+        all_nu_e_flux[ii] = dP_e
+        all_nu_e_E[ii] = energy_frags
+
     all_nu_mu_flux = np.concatenate(all_nu_mu_flux)
     all_nu_mu_E = np.concatenate(all_nu_mu_E)
-    all_nu_e_flux = \
-        [dP_dE["nu_e"](energy_frags(beamE[ii])*2/
-                        (pdgData[parentPDGid]["mass"]*beam_gamma[ii]*
-                         (1+beam_beta[ii]*np.cos(theta[ii])))) *
-        flux_factor_pre(ii) / len(energy_frags(beamE[ii])) * 20 *
-        beam_array[ii, 11]
-        for ii in range(len(beamE))]
     all_nu_e_flux = np.concatenate(all_nu_e_flux)
-    all_nu_e_E = all_nu_mu_E
+    all_nu_e_E = np.concatenate(all_nu_e_E)
 
-    #
+    # Since we know it's muons
     if pdgData[parentPDGid]["charge"] == -1:
         nu_e_pdg = -12
         nu_mu_pdg = 14
