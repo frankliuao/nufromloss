@@ -77,6 +77,7 @@ def get_flux(lossfile):
     parents_list = parents_list_cut
     neutrino_group = {}
     for ii in parents_list:
+        if len(ii) == 0: continue
         neutrino_group[int(ii[0, 7])] = []
         flux_2body_tmp = flux_2body(ii, _det_size)
         if flux_2body_tmp is not None:
