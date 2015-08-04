@@ -112,10 +112,10 @@ def flux_mu(beam_array, det_size):
     """
 
     # Find the decay pattern:
-    parentPDGid = beam_array[0,7]
-    if np.abs(parentPDGid) is not 13: return np.array([])
+    parentPDGid = beam_array[0, 7]
+    if int(np.abs(parentPDGid)) is not 13: return None
+
     parent_decay_pattern = pdgData[parentPDGid]["decay"]
-    tot_nu_flux = []
 
     #
     particle_quantity = beam_array.shape[0]
@@ -136,28 +136,41 @@ def flux_mu(beam_array, det_size):
     # Change of the reference coordinate system:
     cos_theta_rest = (beam_beta-np.cos(theta)) / (beam_beta*np.cos(theta)-1)
 
-    flux_func = {"nu_mu": [lambda x: 2*x**2*(3-2*x), lambda x: 2*x**2*(1-2*x)],
-                 "nu_e": [lambda x: 12*x**2(1-x), lambda x: 12*x**2*(1-x)]}
+    flux_factor_pre = lambda ii: \
+        1/(4*np.pi)*det_size[0]*det_size[1]/det_size[2]**2 * \
+        2/pdgData[parentPDGid]["mass"] * \
+        1/(beam_gamma[ii]*(1+beam_beta[ii]*cos_theta_rest[ii])) * \
+        (1-beam_beta[ii]**2)/(beam_beta[ii]*np.cos(theta[ii])-1)
 
-    flux_factor_pre = 1/(4*np.pi)*det_size[0]*det_size[1]/det_size[2]**2 * \
-                      2/pdgData[parentPDGid]["mass"] * \
-                      1/(beam_gamma*(1+beam_beta*cos_theta_rest)) * \
-                      (1-beam_beta**2)/(beam_beta*np.cos(theta)-1)
+    flux_func = {"nu_mu": [lambda x: 2*x**2*(3-2*x),
+                           lambda x: 2*x**2*(1-2*x)],
+                 "nu_e": [lambda x: 12*x**2*(1-x),
+                          lambda x: 12*x**2*(1-x)]}
 
-    flux_factor = {"nu_mu": flux_factor_pre*flux_func["nu_mu"][0],
-                   "nu_e": flux_factor_pre*flux_func["nu_e"][0]}
+    flux_factor = {"nu_mu": flux_func["nu_mu"][0],
+                   "nu_e": flux_func["nu_e"][0]}
 
     dP_dE = {"nu_mu": np.vectorize(flux_factor["nu_mu"]),
              "nu_e": np.vectorize(flux_factor["nu_e"])}
 
-    energy_frags = lambda energy_mu: np.arange(0, energy_mu, 1)
-    all_nu_mu_flux = [dP_dE["nu_mu"](energy_frags[beamE[ii]])*beam_array[11]
-                      for ii in range(len(beamE))]
-    all_nu_mu_E = [energy_frags[ii] for ii in beamE]
+    energy_frags = lambda energy_mu: np.arange(0, energy_mu, 20)
+    all_nu_mu_flux = \
+        [dP_dE["nu_mu"](energy_frags(beamE[ii])*2/
+                        (pdgData[parentPDGid]["mass"]*beam_gamma[ii]*
+                         (1+beam_beta[ii]*np.cos(theta[ii])))) *
+        flux_factor_pre(ii) / len(energy_frags(beamE[ii])) * 20 *
+        beam_array[ii, 11]
+        for ii in range(len(beamE))]
+    all_nu_mu_E = [energy_frags(ii) for ii in beamE]
     all_nu_mu_flux = np.concatenate(all_nu_mu_flux)
-    all_nu_mu_E = np.concatenate[all_nu_mu_E]
-    all_nu_e_flux = [dP_dE["nu_e"](energy_frags[beamE[ii]])*beam_array[11]
-                     for ii in range(len(beamE))]
+    all_nu_mu_E = np.concatenate(all_nu_mu_E)
+    all_nu_e_flux = \
+        [dP_dE["nu_e"](energy_frags(beamE[ii])*2/
+                        (pdgData[parentPDGid]["mass"]*beam_gamma[ii]*
+                         (1+beam_beta[ii]*np.cos(theta[ii])))) *
+        flux_factor_pre(ii) / len(energy_frags(beamE[ii])) * 20 *
+        beam_array[ii, 11]
+        for ii in range(len(beamE))]
     all_nu_e_flux = np.concatenate(all_nu_e_flux)
     all_nu_e_E = all_nu_mu_E
 

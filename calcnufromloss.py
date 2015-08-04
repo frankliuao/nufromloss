@@ -26,7 +26,7 @@ import numpy as np
 from time import sleep,asctime
 
 from src.loadtxt import loadtxt
-from src.flux_kinematics import flux_2body
+from src.flux_kinematics import flux_2body, flux_mu
 
 __all__ = ['set_cut', 'set_detector', "get_flux", "find_decay", "group_by_PDG"]
 
@@ -84,8 +84,8 @@ def get_flux(lossfile):
         if flux_mu_tmp is not None:
             neutrino_group[int(ii[0, 7])].append(flux_mu_tmp)
         if len(neutrino_group[int(ii[0, 7])]) > 0:
-            neutrino_group[int(ii[0, 7])] = np.row_stack(neutrino_group[int(
-                ii[0, 7])])
+            neutrino_group[int(ii[0, 7])] = \
+                np.row_stack(neutrino_group[int(ii[0, 7])])
         else:
             neutrino_group[int(ii[0, 7])] = np.array([])
     return neutrino_group
@@ -163,6 +163,7 @@ def group_by_PDG(beam_array):
             this_PDG = beam_array_sorted[iter_index:ii, :]
             this_PDG = this_PDG[np.argsort(this_PDG[:, 8]), :]
             beam_list.append(this_PDG)
+            iter_index = ii
     last_PDG = beam_array_sorted[iter_index:, :]
     last_PDG = last_PDG[np.argsort(last_PDG[:, 8]), :]
     beam_list.append(last_PDG)
