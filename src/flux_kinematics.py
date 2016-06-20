@@ -29,7 +29,7 @@ def flux_2body(beam_array, det_size):
     """
 
     # Find the decay pattern:
-    parentPDGid = beam_array[0,7]
+    parentPDGid = beam_array[0, 7]
     parent_decay_pattern = pdgData[parentPDGid]["decay"]
     tot_nu_flux = []
 
@@ -137,7 +137,7 @@ def flux_mu(beam_array, det_size):
     cos_theta_rest = (beam_beta-np.cos(theta)) / (beam_beta*np.cos(theta)-1)
 
     flux_factor_pre = lambda ii: \
-        1/(4*np.pi)*det_size[0]*det_size[1]/det_size[2]**2 * \
+        1/(4*np.pi)* (det_size[0]*det_size[1]/det_size[2]**2) * \
         2/105.658 * \
         1/(beam_gamma[ii]*(1+beam_beta[ii]*cos_theta_rest[ii])) * \
         (1-beam_beta[ii]**2)/(beam_beta[ii]*np.cos(theta[ii])-1)**2

@@ -31,7 +31,7 @@ from src.group_by_PDG import group_by_PDG
 __all__ = ['set_cut', 'set_detector', "get_flux", "find_decay"]
 
 _det_size = np.zeros(3)
-_cut_from_z = -1
+_cut_from_z = None
 
 
 def set_detector(det_size):
@@ -68,35 +68,36 @@ def get_flux(lossfile):
 
     set_detector and set_cut must have already been used before getnuflux.
     """
-    if _cut_from_z == -1 or len(np.nonzero(_det_size)[0]) == 0:
+    if _cut_from_z == None or len(np.nonzero(_det_size)[0]) == 0:
         print "setdetector and setcut first."
         return None
     parents_list = find_decay(lossfile)
-    parents_list_cut = [ii[ii[:,2]>=_cut_from_z, :]
-                        for ii in parents_list]
+    parents_list_cut = [ii_parent[ii_parent[:, 2]>=_cut_from_z, :]
+                        for ii_parent in parents_list]
     parents_list = parents_list_cut
     neutrino_group = {}
-    for ii in parents_list:
-        if len(ii) == 0: continue
-        neutrino_group[int(ii[0, 7])] = []
-        flux_2body_tmp = flux_2body(ii, _det_size)
+    for ii_parent in parents_list:
+        # for each type of parent particle, get its decay products
+        if len(ii_parent) == 0: continue
+        neutrino_group[int(ii_parent[0, 7])] = []
+        flux_2body_tmp = flux_2body(ii_parent, _det_size)
         if flux_2body_tmp is not None:
-            neutrino_group[int(ii[0, 7])].append(flux_2body_tmp)
-        flux_mu_tmp = flux_mu(ii, _det_size)
+            neutrino_group[int(ii_parent[0, 7])].append(flux_2body_tmp)
+        flux_mu_tmp = flux_mu(ii_parent, _det_size)
         if flux_mu_tmp is not None:
-            neutrino_group[int(ii[0, 7])].append(flux_mu_tmp)
-        if len(neutrino_group[int(ii[0, 7])]) > 0:
-            neutrino_group[int(ii[0, 7])] = \
-                np.row_stack(neutrino_group[int(ii[0, 7])])
+            neutrino_group[int(ii_parent[0, 7])].append(flux_mu_tmp)
+        if len(neutrino_group[int(ii_parent[0, 7])]) > 0:
+            neutrino_group[int(ii_parent[0, 7])] = \
+                np.row_stack(neutrino_group[int(ii_parent[0, 7])])
         else:
-            neutrino_group[int(ii[0, 7])] = np.array([])
+            neutrino_group[int(ii_parent[0, 7])] = np.array([])
     return neutrino_group
 
 
 def find_decay(lossfile):
     """Find the particles that decayed in a G4Beamline simulation.
 
-    At least one daughter of the decay needs to be recorded in the loss file
+    At least one daughter of the decay needs to be kept in the loss file
     when doing the G4BL simulation.
 
     ------
