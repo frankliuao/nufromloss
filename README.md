@@ -1,4 +1,9 @@
 # nufromloss
+
+**Status:** Unmaintained since 2016. Python 2 only.
+
+**Security:** Importing this package used to download `http://frankliuao.com/downloads/Codes/pdg_py.dict` over cleartext HTTP and `exec` the body, which is remote code execution. That network fetch and `exec` have been removed. The PDG decay table is vendored in `src/pdg_table.json` and loaded from disk.
+
 A Python package that generates the neutrino flux at a given FAR detector from the G4Beamline tracking result.
 
 Requires:

@@ -1,0 +1,317 @@
+{
+  "source": {
+    "description": "pdgData and pdgMap from the 2016-07-09 Internet Archive snapshot of http://frankliuao.com/downloads/Codes/pdg_py.dict. Values are unchanged, including known mistakes in the kaon-minus decay list.",
+    "original_url": "http://frankliuao.com/downloads/Codes/pdg_py.dict",
+    "wayback_url": "https://web.archive.org/web/20160709024258/http://frankliuao.com/downloads/Codes/pdg_py.dict",
+    "wayback_raw_url": "https://web.archive.org/web/20160709024258id_/http://frankliuao.com/downloads/Codes/pdg_py.dict",
+    "captured_utc": "2016-07-09T02:42:58Z",
+    "original_sha256": "f1e779a7b6fff606f72b6289d041999825c4b1eb18ab6ff4bf6892698681196f",
+    "wayback_digest": "Q2TN32OVVFR65YWBRB7NBELQJN3LFIYO"
+  },
+  "pdgData": {
+    "211": {
+      "name": "pi+",
+      "charge": 1,
+      "mass": 139.57,
+      "decay": [
+        [
+          "munu",
+          -13,
+          14,
+          0.999877,
+          0.999877
+        ],
+        [
+          "enu",
+          -11,
+          12,
+          0.000123,
+          1
+        ]
+      ],
+      "lifetime": 2.6e-08
+    },
+    "-211": {
+      "name": "pi-",
+      "charge": -1,
+      "mass": 139.57,
+      "decay": [
+        [
+          "munu",
+          13,
+          -14,
+          0.999877,
+          0.999877
+        ],
+        [
+          "enu",
+          11,
+          -12,
+          0.000123,
+          1
+        ]
+      ],
+      "lifetime": 2.6e-08
+    },
+    "111": {
+      "name": "pi0",
+      "charge": 0,
+      "mass": 134.9766,
+      "decay": [
+        [
+          "gg",
+          22,
+          22,
+          0.98823,
+          0.98823
+        ],
+        [
+          "eeg",
+          11,
+          -11,
+          22,
+          0.01174,
+          0.99997
+        ]
+      ],
+      "lifetime": 8.52e-17
+    },
+    "-13": {
+      "name": "mu+",
+      "charge": 1,
+      "mass": 105.65837,
+      "decay": [
+        [
+          "e",
+          -11,
+          12,
+          -14,
+          1,
+          1
+        ]
+      ],
+      "lifetime": 2.2e-06
+    },
+    "13": {
+      "name": "mu-",
+      "charge": -1,
+      "mass": 105.65837,
+      "decay": [
+        [
+          "e",
+          11,
+          -12,
+          14,
+          1,
+          1
+        ]
+      ],
+      "lifetime": 2.2e-06
+    },
+    "321": {
+      "name": "kaon+",
+      "charge": 1,
+      "mass": 493.677,
+      "decay": [
+        [
+          "munu",
+          -13,
+          14,
+          0.6355,
+          0.6355
+        ],
+        [
+          "pienu",
+          111,
+          -11,
+          12,
+          0.0507,
+          0.6861999999999999
+        ],
+        [
+          "pimunu",
+          111,
+          -13,
+          14,
+          0.03353,
+          0.7197299999999999
+        ],
+        [
+          "pipi",
+          211,
+          111,
+          0.2066,
+          0.9263299999999999
+        ],
+        [
+          "pipipi0",
+          211,
+          111,
+          111,
+          0.01761,
+          0.9439399999999999
+        ],
+        [
+          "pipipi1",
+          211,
+          211,
+          -211,
+          0.0559,
+          0.9998399999999998
+        ],
+        [
+          "munugamma",
+          -13,
+          14,
+          22,
+          0.0062,
+          1.0060399999999998
+        ]
+      ],
+      "lifetime": 1.238e-08
+    },
+    "-321": {
+      "name": "kaon-",
+      "charge": -1,
+      "mass": 493.677,
+      "decay": [
+        [
+          "munu",
+          -13,
+          14,
+          0.6355,
+          0.6355
+        ],
+        [
+          "pienu",
+          111,
+          -11,
+          12,
+          0.0507,
+          0.6861999999999999
+        ],
+        [
+          "pimunu",
+          111,
+          -13,
+          14,
+          0.03353,
+          0.7197299999999999
+        ],
+        [
+          "pipi",
+          211,
+          111,
+          0.2066,
+          0.9263299999999999
+        ],
+        [
+          "pipipi0",
+          211,
+          111,
+          111,
+          0.01761,
+          0.9439399999999999
+        ],
+        [
+          "pipipi1",
+          211,
+          211,
+          -211,
+          0.0559,
+          0.9998399999999998
+        ],
+        [
+          "munugamma",
+          -13,
+          14,
+          22,
+          0.0062,
+          1.0060399999999998
+        ]
+      ],
+      "lifetime": 1.238e-08
+    },
+    "311": {
+      "name": "kaon0",
+      "charge": 0,
+      "mass": 497.614,
+      "decay": null,
+      "accuDecay": null,
+      "lifetime": null
+    },
+    "-11": {
+      "name": "e+",
+      "charge": 1,
+      "mass": 0.511,
+      "decay": null,
+      "accuDecay": null,
+      "lifetime": null
+    },
+    "11": {
+      "name": "e-",
+      "charge": -1,
+      "mass": 0.511,
+      "decay": null,
+      "accuDecay": null,
+      "lifetime": null
+    },
+    "14": {
+      "name": "nu_mu",
+      "charge": 0,
+      "mass": 0,
+      "decay": null,
+      "accuDecay": null,
+      "lifetime": null
+    },
+    "-14": {
+      "name": "anti_nu_mu",
+      "charge": 0,
+      "mass": 0,
+      "decay": null,
+      "accuDecay": null,
+      "lifetime": null
+    },
+    "12": {
+      "name": "nu_e",
+      "charge": 0,
+      "mass": 0,
+      "decay": null,
+      "accuDecay": null,
+      "lifetime": null
+    },
+    "-12": {
+      "name": "anti_nu_e",
+      "charge": 0,
+      "mass": 0,
+      "decay": null,
+      "accuDecay": null,
+      "lifetime": null
+    },
+    "22": {
+      "name": "gamma",
+      "charge": 0,
+      "mass": 0,
+      "decay": null,
+      "accuDecay": null,
+      "lifetime": null
+    }
+  },
+  "pdgMap": {
+    "pi+": 211,
+    "pi-": -211,
+    "pi0": 111,
+    "mu+": -13,
+    "mu-": 13,
+    "kaon+": 321,
+    "kaon-": -321,
+    "kaon0": 311,
+    "e+": -11,
+    "e-": 11,
+    "nu_mu": 14,
+    "anti_nu_mu": -14,
+    "nu_e": 12,
+    "anti_nu_e": -12,
+    "gamma": 22
+  }
+}
